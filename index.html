@@ -2,129 +2,169 @@
 <html lang="ko">
 
 <head>
-	<meta charset="UTF-8" />
-	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>고양이 가라사대</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>고양이 가라사대</title>
 </head>
 <style>
-	body {
-		text-align: center;
-	}
+    body {
+        text-align: center;
+    }
 
-	.main-card button {
-		position: relative;
-		left: -45px;
-		bottom: 15px;
-	}
+    .main-card button {
+        position: relative;
+        left: -45px;
+        bottom: 15px;
+    }
 
-	.favorites {
-		list-style: none;
-		display: flex;
-		justify-content: center;
-		flex-wrap: wrap;
-		gap: 15px;
-	}
+    .favorites {
+        list-style: none;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
 </style>
 
 <body>
-	<div id="app"></div>
+    <div id="app"></div>
 
-	<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-	<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-	<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-	<script type="text/babel">
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script type="text/babel">
 
-		console.log("야옹");
+        const jsonLocalStorage = {
+            setItem: (key, value) => {
+                localStorage.setItem(key, JSON.stringify(value));
+            },
+            getItem: (key) => {
+                return JSON.parse(localStorage.getItem(key));
+            },
+        };
 
-		const Title = (props) => {
-			return (
-				<h1>{props.children}</h1>
-			);
-		}
-
-
-		const Form = ({ handleSubmit }) => {
-			return (
-				<form onSubmit={handleSubmit}>
-					<input type="text" name="name" placeholder="영어 대사를 입력해주세요" />
-					<button type="submit">생성</button>
-				</form>
-			);
-		}
-
-		function CatItem(props) {
-			return (
-				<li>
-					<img src={props.img} style={{ width: '150px' }} />
-				</li>
-			);
-		}
+        const Title = (props) => {
+            return (
+                <h1>{props.children}</h1>
+            );
+        }
 
 
-		function Favorites({ favorites }) {
-			const CAT1 = "https://cataas.com/cat/HSENVDU4ZMqy7KQ0/says/react";
-			const CAT2 = "https://cataas.com/cat/BxqL2EjFmtxDkAm2/says/inflearn";
-			const CAT3 = "https://cataas.com/cat/18MD6byVC1yKGpXp/says/JavaScript";
+        const Form = ({ updateMainCat }) => {
 
-			return (
-				<ul className="favorites">
-					{favorites.map(cat => <CatItem img={cat} key={cat} />)}
-				</ul>
-			);
-		}
+            const includesHangul = (text) => /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/i.test(text);
+            const [value, setValue] = React.useState('');
+            const [errorMessage, SetErrorMessage] = React.useState('');
 
-		const MainCard = ({ mainCat, handleHeartClick }) => {
-			return (
-				<div className="main-card">
-					<img src={mainCat} alt="고양이" width="400" />
-					<button onClick={handleHeartClick}>🤍</button>
-				</div>
-			);
-		}
+            function handleInputChange(e) {
+                const userVAlue = e.target.value;
+                console.log(includesHangul(userVAlue));
+                setValue(userVAlue.toUpperCase());
 
-		const App = () => {
-			const CAT1 = "https://cataas.com/cat/HSENVDU4ZMqy7KQ0/says/react";
-			const CAT2 = "https://cataas.com/cat/BxqL2EjFmtxDkAm2/says/inflearn";
-			const CAT3 = "https://cataas.com/cat/18MD6byVC1yKGpXp/says/JavaScript";
+                SetErrorMessage('');
+                if (includesHangul(userVAlue)) {
+                    SetErrorMessage('한글은 입력할 수 없습니다.');
+                }
+            }
 
-			const [counter, setCounter] = React.useState(1);
-			const [mainCat, setMainCat] = React.useState(CAT1);
-			const [favorites, Setfavorites] = React.useState([CAT1, CAT2]);
+            const handleFormSubmit = (e) => {
+                e.preventDefault();
+                SetErrorMessage('');
+                if (value == '') {
+                    SetErrorMessage('빈 값으로 만들 수 없습니다');
+                    return;
+                }
+                updateMainCat();
+            }
 
-			console.log("카운터", counter);
+            return (
+                <form onSubmit={handleFormSubmit}>
+                    <input type="text"
+                        value={value}
+                        name="name"
+                        placeholder="영어 대사를 입력해주세요"
+                        onChange={handleInputChange}
+                    />
 
-			function handleSubmit(e) {
-				e.preventDefault();
-				console.log("폼 전송됨");
-				setCounter(counter + 1);
-				setMainCat(CAT2);
-			}
+                    <button type="submit">생성</button>
+                    <p style={{ color: 'red' }}>{errorMessage}</p>
+                </form>
+            );
+        }
 
-			function handleHeartClick() {
-				console.log('하트 눌렀음');
-				Setfavorites([...favorites, CAT3]);
-			}
-
-			return (
-				<div>
-					<Title>{counter}번째 고양이 가라사대</Title>
-					<Form handleSubmit={handleSubmit} />
-					<MainCard mainCat={mainCat} handleHeartClick={handleHeartClick} />
-					<Favorites favorites={favorites} />
-				</div>
-			);
-		}
+        function CatItem(props) {
+            return (
+                <li>
+                    <img src={props.img} style={{ width: '150px' }} />
+                </li>
+            );
+        }
 
 
+        function Favorites({ favorites }) {
+            const CAT1 = "https://cataas.com/cat/HSENVDU4ZMqy7KQ0/says/react";
+            const CAT2 = "https://cataas.com/cat/BxqL2EjFmtxDkAm2/says/inflearn";
+            const CAT3 = "https://cataas.com/cat/18MD6byVC1yKGpXp/says/JavaScript";
 
-		const 여기다가그려 = document.querySelector('#app');
+            return (
+                <ul className="favorites">
+                    {favorites.map(cat => <CatItem img={cat} key={cat} />)}
+                </ul>
+            );
+        }
 
-		ReactDOM.render(<App />, 여기다가그려);
+        const MainCard = ({ mainCat, onHandleClcik }) => {
+            return (
+                <div className="main-card">
+                    <img src={mainCat} />
+                    <button onClick={onHandleClcik}>🤍</button>
+                </div>
+            );
+        }
+
+        const App = () => {
+            const CAT1 = "https://cataas.com/cat/HSENVDU4ZMqy7KQ0/says/react";
+            const CAT2 = "https://cataas.com/cat/BxqL2EjFmtxDkAm2/says/inflearn";
+            const CAT3 = "https://cataas.com/cat/18MD6byVC1yKGpXp/says/JavaScript";
+
+            const [counter, setCounter] = React.useState(jsonLocalStorage.getItem('counter'));
+            const [mainCat, setMainCat] = React.useState(CAT1);
+            const [favorites, Setfavorites] = React.useState(jsonLocalStorage.getItem('favorites') || []);
+
+
+            function updateMainCat() {
+                setMainCat(CAT2);
+                const nextCounter = counter + 1;
+                setCounter(nextCounter);
+                jsonLocalStorage.setItem("counter", nextCounter);
+            }
+
+            function onHandleClcik() {
+                const nextFavorites = [...favorites, mainCat]
+                Setfavorites(nextFavorites);
+                jsonLocalStorage.setItem('favorites', nextFavorites)
+            }
+
+            return (
+                <div>
+                    <Title>{counter}번째 고양이 가라사대</Title>
+                    <Form updateMainCat={updateMainCat} />
+                    <MainCard mainCat={mainCat} onHandleClcik={onHandleClcik} />
+                    <Favorites favorites={favorites} />
+                </div>
+            );
+        }
 
 
 
-	</script>
+        const 여기다가그려 = document.querySelector('#app');
+
+        ReactDOM.render(<App />, 여기다가그려);
+
+
+
+    </script>
 </body>
 
 </html>
